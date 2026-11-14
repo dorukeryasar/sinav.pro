@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sınav Sonucu Açıklama Sistemi - Demo</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --blue: #247bb9;
+    --blue-border: #b7d4e9;
+    --green: #28b943;
+    --text: #30343a;
+    --muted: #666;
+  }
+  body {
+    margin: 0;
+    padding: 18px 12px 28px;
+    background: #f5f7f9;
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .page { width: min(100%, 760px); margin: 0 auto; }
+  .panel {
+    background: #fff;
+    border: 2px solid var(--blue);
+    border-radius: 11px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .heading {
+    background: linear-gradient(110deg, #1976b9, #3188c4);
+    color: white;
+    font-size: clamp(20px, 4vw, 29px);
+    font-weight: 700;
+    padding: 15px 24px;
+  }
+  .content { padding: 17px 18px 18px; }
+  .field {
+    display: flex;
+    min-height: 58px;
+    margin-bottom: 14px;
+    border: 2px solid #d7d7d7;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .field label {
+    flex: 0 0 28%;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: linear-gradient(#f0f0f0, #e6e6e6);
+    border-right: 1px solid #d1d1d1;
+    font-weight: 700;
+    font-size: clamp(15px, 2.7vw, 21px);
+  }
+  .field select, .field input {
+    min-width: 0;
+    flex: 1;
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: #fff;
+    color: #555;
+    padding: 10px 16px;
+    font-size: clamp(15px, 2.8vw, 21px);
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 22px;
+    border-bottom: 0;
+  }
+  .tab {
+    padding: 15px 19px;
+    border: 2px solid var(--blue-border);
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    background: #fff;
+    color: #247bb9;
+    font-size: clamp(15px, 2.8vw, 20px);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tab.active { background: #dcecf9; }
+  .lookup {
+    border: 2px solid var(--blue-border);
+    border-radius: 0 10px 10px 10px;
+    padding: 26px 24px 18px;
+    background: #fff;
+  }
+  .lookup .field:last-of-type { margin-bottom: 20px; }
+  .search-wrap { text-align: center; }
+  .search {
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(#2bc346, #25ad3e);
+    color: white;
+    font-size: 21px;
+    padding: 16px 38px;
+    cursor: pointer;
+    box-shadow: 0 2px 3px rgba(0,0,0,.12);
+  }
+  .search:active { transform: translateY(1px); }
+  .hint {
+    text-align: center;
+    color: #111;
+    font-size: clamp(16px, 3vw, 22px);
+    line-height: 1.45;
+    margin: 18px 4px 4px;
+  }
+  .result {
+    margin: 28px -7px 0;
+    padding: 19px 18px;
+    border: 2px solid #a3eeb1;
+    border-radius: 10px;
+    background: linear-gradient(100deg, #d5f8da, #c8f3d0);
+    color: #08701c;
+    font-size: clamp(17px, 3vw, 23px);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .close {
+    border: 0;
+    background: transparent;
+    color: #24a83c;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  footer {
+    text-align: center;
+    color: #42416c;
+    font-size: 18px;
+    margin: 27px 0 10px;
+  }
+  .pionet { color: #111; font-weight: 700; }
+  .pionet b { color: white; background: #ed1c24; padding: 2px 5px; }
+  @media (max-width: 480px) {
+    body { padding: 10px 8px 24px; }
+    .content { padding: 12px 10px 14px; }
+    .heading { padding: 14px 15px; }
+    .field { min-height: 51px; margin-bottom: 11px; }
+    .field label { flex-basis: 31%; padding: 8px 9px; }
+    .field select, .field input { padding: 8px 10px; }
+    .tab { padding: 13px 11px; }
+    .lookup { padding: 20px 12px 14px; }
+    .search { padding: 14px 30px; }
+    .result { margin-top: 22px; padding: 16px 13px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <section class="panel">
+    <div class="heading">Sınav Sonucu Açıklama Sistemi</div>
+    <div class="content">
+      <div class="field">
+        <label for="exam">Sınav Türü</label>
+        <select id="exam">
+          <option>LGS (2,3,4,5,6,7,8. Sınıflar)</option>
+          <option>Bursluluk Sınavı</option>
+          <option>Deneme Sınavı</option>
+        </select>
+      </div>
+
+      <nav class="tabs" aria-label="Sorgulama yöntemi">
+        <button class="tab" data-mode="T.C. No">T.C. No</button>
+        <button class="tab" data-mode="Telefon">Telefon</button>
+        <button class="tab active" data-mode="Öğrenci No">Öğrenci No</button>
+      </nav>
+
+      <section class="lookup">
+        <div class="field">
+          <label for="city">Şehir :</label>
+          <select id="city"><option>İĞDIR</option><option>ERZURUM</option><option>ANKARA</option><option>İSTANBUL</option></select>
+        </div>
+        <div class="field">
+          <label for="district">İlçe :</label>
+          <select id="district"><option>MERKEZ</option><option>ARALIK</option><option>KARAKOYUNLU</option><option>TUZLUCA</option></select>
+        </div>
+        <div class="field">
+          <label for="school">Kurum :</label>
+          <select id="school"><option>BİLGİ KURS MERKEZİ (TEOREM)</option><option>ÖRNEK EĞİTİM KURUMU</option></select>
+        </div>
+        <div class="field">
+          <label for="grade">Sınıf :</label>
+          <select id="grade"><option>5. Sınıf</option><option>6. Sınıf</option><option>7. Sınıf</option><option>8. Sınıf</option></select>
+        </div>
+        <div class="field">
+          <label for="student">Öğrenci No :</label>
+          <input id="student" value="Zeynep Eçe" autocomplete="off">
+        </div>
+        <div class="search-wrap">
+          <button class="search" id="searchBtn">Sonuç Ara</button>
+        </div>
+        <p class="hint"><strong>Deneme Sonuçlarını</strong> Öğrenci Numaranız ile sorgulayabilirsiniz.</p>
+      </section>
+
+      <div class="result" id="result">
+        <span>Önceki Sınav: 42 Yanlış 12 Boş 12 Doğru</span>
+        <button class="close" aria-label="Sonuç mesajını kapat" id="closeResult">×</button>
+      </div>
+    </div>
+  </section>
+  <footer>© 2026 Powered by <span class="pionet"><b>Pio</b>Net</span></footer>
+</main>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const studentLabel = document.querySelector('label[for="student"]');
+  const studentInput = document.getElementById('student');
+  const hint = document.querySelector('.hint');
+
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    tabs.forEach(item => item.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.mode;
+    studentLabel.textContent = mode + ' :';
+    studentInput.value = '';
+    studentInput.placeholder = mode + ' bilgisi giriniz';
+    hint.innerHTML = '<strong>Deneme Sonuçlarını</strong> ' + mode + ' bilginiz ile sorgulayabilirsiniz.';
+  }));
+
+  document.getElementById('closeResult').addEventListener('click', () => {
+    document.getElementById('result').hidden = true;
+  });
+
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    const value = studentInput.value.trim();
+    if (!value) {
+      alert('Lütfen öğrenci bilgisi giriniz.');
+      studentInput.focus();
+      return;
+    }
+    alert('Bu bir HTML demo ekranıdır. Gerçek sınav sonuçlarını sorgulamak için kurumun resmi sistemine bağlanılması gerekir.');
+  });
+</script>
+</body>
+</html>
